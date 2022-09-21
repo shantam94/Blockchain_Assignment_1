@@ -17,6 +17,12 @@ from key import generate_keys
 from verify_keys import *
 from cryptography.hazmat.primitives import serialization
 from pymerkle import MerkleTree
+import argparse
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--port", help="which port you need to run this node?")
+args = parser.parse_args()
 
 # Part 1 - Building a Blockchain
 
@@ -160,12 +166,10 @@ class Blockchain:
 
         public_key = blockchain.users.get(sender).get("keys")[1]
         private_key =  blockchain.users.get(sender).get("keys")[0]
+
         signature = sign(message_transaction,private_key)
 
-        
-
         status = verify(message_transaction, signature, public_key)
-        print(status)
 
         if status:
             print("Signatures verified!")
@@ -251,14 +255,13 @@ def add_transaction():
         print(json)
         transaction_keys = ['sender', 'receiver', 'amount']
 
-        # if not all(key in json for key in transaction_keys):
-        #     return 'Some elements of the transaction are missing', 400
+        if not all(key in json for key in transaction_keys):
+            return 'Some elements of the transaction are missing', 400
+
         message_sender = blockchain.check_users(json['sender'])
         message_receiver = blockchain.check_users(json['receiver'])
-        print(blockchain.users)
 
         if message_sender and message_receiver:
-
             index = blockchain.add_transaction(json['sender'], json['receiver'], json['amount'])
             if index:
                 response = {'message': f'This transaction will be added to Block {index} '}
@@ -319,4 +322,4 @@ def add_user():
 
 
 # Running the app
-app.run(host = '0.0.0.0', port = 5001)
+app.run(host = '0.0.0.0', port = args.port)
